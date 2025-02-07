@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QSizePolicy,
     QApplication
 )
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFontDatabase, QFont
 from PyQt5.QtCore import Qt, QEvent, QPoint
 
 import sys
@@ -19,6 +19,14 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 class TitleBar(QWidget):
     def __init__(self):
         super().__init__()
+
+        font_id = QFontDatabase.addApplicationFont("src/resources/fonts/Inter-4.1/Inter.ttc")
+        if font_id == -1:
+            print("Error al cargar la fuente")
+        else:
+            print("Fuente cargada correctamente")
+
+        inter_font = QFont("Inter")
         self.start_pos = None
         self.is_dragging = False
         self.setMouseTracking(True)
@@ -38,6 +46,7 @@ class TitleBar(QWidget):
 
         # Etiqueta de título
         self.title_label = QLabel("Gestió de tasques")
+        self.title_label.setFont(inter_font)
         self.title_label.setStyleSheet(f"color: black; font-size: 18px;")
 
         hbox.addWidget(self.image_label)
