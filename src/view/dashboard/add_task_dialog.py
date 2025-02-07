@@ -1,10 +1,11 @@
 import sys
+import os
 from PyQt5.QtWidgets import (
     QApplication, QDialog, QVBoxLayout, QLabel, QPushButton, 
     QGraphicsDropShadowEffect, QWidget, QLineEdit, QFrame
 )
 from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtGui import QColor, QFontDatabase, QFont
+from PyQt5.QtGui import QColor, QFontDatabase, QFont, QIcon
 from PyQt5.QtWidgets import QComboBox, QHBoxLayout
 from PyQt5.QtWidgets import QCalendarWidget
 import random
@@ -152,17 +153,36 @@ class AddTaskDialog(QDialog):
         """)
 
         self.combo_box2 = QComboBox(self.container)
-        self.combo_box2.addItems(["Prioridad 1", "Prioridad 2", "Prioridad 3", "Prioridad 4"])
+        self.combo_box2.addItem(QIcon("src/resources/images/add_task/red_flag.svg"), "Prioridad 1")
+        self.combo_box2.addItem(QIcon("src/resources/images/add_task/orange_flag.svg"), "Prioridad 2")
+        self.combo_box2.addItem(QIcon("src/resources/images/add_task/blue_flag.svg"), "Prioridad 3")
+        self.combo_box2.addItem(QIcon("src/resources/images/add_task/white_flag.svg"), "Prioridad 4")
+        self.combo_box2.setCurrentIndex(3)  # Establecer la prioridad 4 como predeterminada
         self.combo_box2.setStyleSheet("""
             QComboBox {
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                padding: 10px;
-                font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 18px;
             }
-            /* Estilo cuando el ratón pasa por encima */
+            QComboBox QAbstractItemView::item:hover {
+                selection-background-color: #d3d3d3;  /* Gris claro */
+            }
+            QComboBox QAbstractItemView {
+                background-color: #d3d3d3;  /* Color de fondo del menú desplegable */
+                color: black;  /* Color del texto en el menú */
+                selection-background-color: #d3d3d3;
+                selection-color: black;  /* Color del texto del elemento seleccionado */
+                border-radius: 5px;  /* Bordes redondeados */
+                outline: none;  /* Evitar el contorno */
+                padding: 5px;
+                spacing: 10px;  /* Espaciado entre las opciones */
+            }
             QComboBox:hover {
                 background-color: #f0f0f0;
+            }
+            QComboBox::drop-down {
+                border: 0px;
             }
         """)
         self.combo_box2.setFont(inter_font)
@@ -204,6 +224,7 @@ class AddTaskDialog(QDialog):
         """)
         self.add_task_button.setFont(inter_font)
         self.add_task_button.setCursor(Qt.ForbiddenCursor)
+        # self.add_task_button.clicked.connect()
         button_layout.addWidget(self.add_task_button, alignment=Qt.AlignRight)
         
         container_layout.addLayout(button_layout)
@@ -241,7 +262,7 @@ class AddTaskDialog(QDialog):
             self.calendar_frame.hide()
         else:
             # Posicionar el calendario justo debajo del botón
-            button_pos = self.calendar_button.mapToGlobal(QPoint(0, self.calendar_button.height()))
+            button_pos = self.calendar_button.mapTo(self, QPoint(0, self.calendar_button.height()))
             self.calendar_frame.move(button_pos)
             self.calendar_frame.show()
 

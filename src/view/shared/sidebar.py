@@ -5,6 +5,7 @@ from PyQt5.QtGui import QIcon, QFontDatabase, QFont, QPixmap, QPainter
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
 
 from view.dashboard.add_task_dialog import AddTaskDialog
+from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
 
 class SideBar(QWidget):
     def __init__(self):
@@ -67,7 +68,7 @@ class SideBar(QWidget):
         user_button.setFont(inter_font)
 
         user_button_pixmap = QPixmap("src/resources/images/sidebar/user.jpg")
-        user_button_pixmap = user_button_pixmap.scaled(42, 42, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        user_button_pixmap = user_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         # Create a circular mask
         mask = QPixmap(user_button_pixmap.size())
@@ -81,7 +82,7 @@ class SideBar(QWidget):
         # Apply the mask to the pixmap
         user_button_pixmap.setMask(mask.createMaskFromColor(Qt.transparent, Qt.MaskInColor))
         user_button_label = QLabel()
-        user_button_label.setPixmap(user_button_pixmap.scaled(42, 42, Qt.KeepAspectRatio, Qt.SmoothTransformation))  # Set the size of the pixmap
+        user_button_label.setPixmap(user_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))  # Set the size of the pixmap
 
         user_button_layout.addWidget(user_button_label)
         user_button_layout.addSpacing(10)  # Reduce the space between the image and the text
@@ -92,121 +93,212 @@ class SideBar(QWidget):
         # add Task 
         add_task_button_layout = QHBoxLayout()
         add_task_button_layout.setAlignment(Qt.AlignLeft)
-        add_task_button_layout.setContentsMargins(0, 0, 0, 0)
+        add_task_button_layout.setContentsMargins(0, 0, 180, 0)
         
-        add_task_button_container = QWidget()
-        add_task_button_container.setStyleSheet("""
+        self.add_task_button_container = QWidget()
+        self.add_task_button_container.setStyleSheet("""
             QWidget {
             background-color: transparent;
             border-radius: 10px;
-            padding: 10px 45px; /* Aumenta el área de interacción */
+            padding: 10px; /* Aumenta el área de interacción */
             }
             QWidget:hover {
             background-color: #e0e0e0; /* Color grisáceo */
             }
-            QWidget:pressed {
-            background-color: #c0c0c0; /* Color al mantener el click izquierdo */
-            }
         """)
-        add_task_button_container.setCursor(Qt.PointingHandCursor)
-        add_task_button_container.setLayout(add_task_button_layout) 
-        add_task_button_container.mouseReleaseEvent = self.add_task_clicked
+        self.add_task_button_container.setCursor(Qt.PointingHandCursor)
+        self.add_task_button_container.setLayout(add_task_button_layout)
+        self.add_task_button_container.mousePressEvent = self.add_task_button_pressed
+        self.add_task_button_container.mouseReleaseEvent = self.add_task_button_clicked
         
         add_task_button = QLabel("Añadir Tarea")
         add_task_button.setStyleSheet("color: #a81f00; border: none; font-size: 18px; font-weight: bold;")
         add_task_button.setFont(inter_font)
 
-        add_task_button_pixmap = QPixmap("src/resources/images/sidebar/addTask.png")
+        add_task_button_pixmap = QPixmap("src/resources/images/sidebar/addTask.svg")
         add_task_button_label = QLabel()
-        add_task_button_label.setPixmap(add_task_button_pixmap.scaled(42, 42, Qt.KeepAspectRatio, Qt.SmoothTransformation))  # Set the size of the pixmap
+        add_task_button_label.setPixmap(add_task_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))  # Set the size of the pixmap
 
         add_task_button_layout.addWidget(add_task_button_label)
-        add_task_button_layout.addSpacing(10)  # Reduce the space between the image and the text
+        add_task_button_layout.addSpacing(-15)  # Reduce the space between the image and the text
         add_task_button_layout.addWidget(add_task_button)
 
-        left_layout.addWidget(add_task_button_container)
+        left_layout.addWidget(self.add_task_button_container)
 
         # today
 
-        today_button_layout = QHBoxLayout()
-        today_button_layout.setAlignment(Qt.AlignLeft)
-        today_button_layout.setContentsMargins(0, 0, 0, 0)
-        # today_button_layout.mousePressEvent = self.today_clicked
+        self.today_button_layout = QHBoxLayout()
+        self.today_button_layout.setAlignment(Qt.AlignLeft)
+        self.today_button_layout.setContentsMargins(0, 0, 200, 0)
+        # self.today_button_layout.mousePressEvent = self.today_clicked
 
-        today_button_container = QWidget()
-        today_button_container.setStyleSheet("""
+        self.today_button_container = QWidget()
+        self.today_button_container.setStyleSheet("""
             QWidget {
             background-color: transparent;
             border-radius: 10px;
-            padding: 10px 45px; /* Aumenta el área de interacción */
+            padding: 10px; /* Aumenta el área de interacción */
             }
             QWidget:hover {
             background-color: #e0e0e0; /* Color grisáceo */
             }
-            QWidget:pressed {
-            background-color: #c0c0c0; /* Color al mantener el click izquierdo */
-            }
         """)
-        today_button_container.setLayout(today_button_layout) 
+        self.today_button_container.setCursor(Qt.PointingHandCursor)
+        self.today_button_container.setLayout(self.today_button_layout) 
+        self.today_button_container.mousePressEvent = self.today_button_pressed
+        self.today_button_container.mouseReleaseEvent = self.today_button_clicked
 
-        today_button = QLabel("Hoy")
-        today_button.setStyleSheet("color: black; border: none; font-size: 18px;")
-        today_button.setFont(inter_font)
+        self.today_button = QLabel("Hoy")
+        self.today_button.setStyleSheet("color: black; border: none; font-size: 18px;")
+        self.today_button.setFont(inter_font)
 
-        today_button_pixmap = QPixmap("src/resources/images/sidebar/today.png")
-        today_button_label = QLabel()
-        today_button_label.setPixmap(today_button_pixmap.scaled(42, 42, Qt.KeepAspectRatio, Qt.SmoothTransformation))  # Set the size of the pixmap
+        self.today_button_pixmap = QPixmap("src/resources/images/sidebar/today.svg")
+        self.today_button_label = QLabel()
+        self.today_button_label.setPixmap(self.today_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))  # Set the size of the pixmap
 
-        today_button_layout.addWidget(today_button_label)
-        today_button_layout.addSpacing(10)  # Reduce the space between the image and the text
-        today_button_layout.addWidget(today_button)
+        self.today_button_layout.addWidget(self.today_button_label)
+        self.today_button_layout.addSpacing(-15)  # Reduce the space between the image and the text
+        self.today_button_layout.addWidget(self.today_button)
 
-        left_layout.addWidget(today_button_container)
+        left_layout.addWidget(self.today_button_container)
 
         # calendar
         
-        calendar_button_layout = QHBoxLayout()
-        calendar_button_layout.setAlignment(Qt.AlignLeft)
-        calendar_button_layout.setContentsMargins(0, 0, 0, 0)
-        # calendar_button_layout.mousePressEvent = self.calendar_clicked
+        self.calendar_button_layout = QHBoxLayout()
+        self.calendar_button_layout.setAlignment(Qt.AlignLeft)
+        self.calendar_button_layout.setContentsMargins(0, 0, 200, 0)
+        # self.calendar_button_layout.mousePressEvent = self.calendar_clicked
 
-        calendar_button_container = QWidget()
-        calendar_button_container.setStyleSheet("""
+        self.calendar_button_container = QWidget()
+        self.calendar_button_container.setStyleSheet("""
             QWidget {
             background-color: transparent;
             border-radius: 10px;
-            padding: 10px 45px; /* Aumenta el área de interacción */
+            padding: 10px; /* Aumenta el área de interacción */
             }
             QWidget:hover {
             background-color: #e0e0e0; /* Color grisáceo */
             }
-            QWidget:pressed {
-            background-color: #c0c0c0; /* Color al mantener el click izquierdo */
-            }
         """)
-        calendar_button_container.setLayout(calendar_button_layout) 
+        self.calendar_button_container.setCursor(Qt.PointingHandCursor)
+        self.calendar_button_container.setLayout(self.calendar_button_layout)
+        self.calendar_button_container.mousePressEvent = self.calendar_button_pressed
+        self.calendar_button_container.mouseReleaseEvent = self.calendar_button_clicked 
 
-        calendar_button = QLabel("Calendario")
-        calendar_button.setStyleSheet("color: black; border: none; font-size: 18px;")
-        calendar_button.setFont(inter_font)
+        self.calendar_button = QLabel("Calendario")
+        self.calendar_button.setStyleSheet("color: black; border: none; font-size: 18px;")
+        self.calendar_button.setFont(inter_font)
 
-        calendar_button_pixmap = QPixmap("src/resources/images/sidebar/calendar.png")
-        calendar_button_label = QLabel()
-        calendar_button_label.setPixmap(calendar_button_pixmap.scaled(42, 42, Qt.KeepAspectRatio, Qt.SmoothTransformation))  # Set the size of the pixmap
+        self.calendar_button_pixmap = QPixmap("src/resources/images/sidebar/calendar.svg")
+        self.calendar_button_label = QLabel()
+        self.calendar_button_label.setPixmap(self.calendar_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))  # Set the size of the pixmap
 
-        calendar_button_layout.addWidget(calendar_button_label)
-        calendar_button_layout.addSpacing(10)  # Reduce the space between the image and the text
-        calendar_button_layout.addWidget(calendar_button)
+        self.calendar_button_layout.addWidget(self.calendar_button_label)
+        self.calendar_button_layout.addSpacing(-15)  # Reduce the space between the image and the text
+        self.calendar_button_layout.addWidget(self.calendar_button)
 
-        left_layout.addWidget(calendar_button_container)
+        left_layout.addWidget(self.calendar_button_container)
 
         # Ejemplo: Agregar algunos widgets a la columna roja
         right_layout.addWidget(QPushButton("Botón Rojo 1"))
         right_layout.addWidget(QPushButton("Botón Rojo 2"))
 
+    def add_task_button_pressed(self, event):
+        if event.button() == Qt.LeftButton:
+            self.add_task_button_container.setStyleSheet("""
+                QWidget {
+                    background-color: #dadada;
+                    border-radius: 10px;
+                    padding: 10px; /* Aumenta el área de interacción */
+                }
+            """)
 
-    def add_task_clicked(self, event):
+    def add_task_button_clicked(self, event):
         if event.button() == Qt.LeftButton:
             print("Add task clicked")
+            self.add_task_button_container.setStyleSheet("""
+                QWidget {
+                    background-color: transparent;
+                    border-radius: 10px;
+                    padding: 10px; /* Aumenta el área de interacción */
+                }
+                QWidget:hover {
+                    background-color: #e0e0e0; /* Color grisáceo */
+                }
+            """)
             self.add_task_dialog = AddTaskDialog()
             self.add_task_dialog.show()
+
+    def today_button_pressed(self, event):
+        if event.button() == Qt.LeftButton:
+            self.today_button_container.setStyleSheet("""
+                QWidget {
+                    background-color: #dadada;
+                    border-radius: 10px;
+                    padding: 10px; /* Aumenta el área de interacción */
+                }
+            """)
+
+    def today_button_clicked(self, event):
+        if event.button() == Qt.LeftButton:
+            print("today changed")
+            self.today_button_container.setStyleSheet("""
+                QWidget {
+                    background-color: #ffefe5;
+                    border-radius: 10px;
+                    padding: 10px; /* Aumenta el área de interacción */
+                }
+            """)
+            self.calendar_button_container.setStyleSheet("""
+                QWidget {
+                    background-color: transparent;
+                    border-radius: 10px;
+                    padding: 10px; /* Aumenta el área de interacción */
+                }
+                QWidget:hover {
+                    background-color: #e0e0e0; /* Color grisáceo */
+                }
+            """)
+            self.calendar_button_pixmap = QPixmap("src/resources/images/sidebar/calendar.svg")
+            self.calendar_button_label.setPixmap(self.calendar_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.today_button_pixmap = QPixmap("src/resources/images/sidebar/today_selected.svg")
+            self.today_button_label.setPixmap(self.today_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.calendar_button.setStyleSheet("color: black; border: none; font-size: 18px;")
+            self.today_button.setStyleSheet("color: #a81f00; border: none; font-size: 18px;")
+
+    def calendar_button_pressed(self, event):
+        if event.button() == Qt.LeftButton:
+            self.calendar_button_container.setStyleSheet("""
+                QWidget {
+                    background-color: #dadada;
+                    border-radius: 10px;
+                    padding: 10px; /* Aumenta el área de interacción */
+                }
+            """)
+
+    def calendar_button_clicked(self, event):
+        if event.button() == Qt.LeftButton:
+            print("Add task clicked")
+            self.calendar_button_container.setStyleSheet("""
+                QWidget {
+                    background-color: #ffefe5;
+                    border-radius: 10px;
+                    padding: 10px; /* Aumenta el área de interacción */
+                }
+            """)
+            self.today_button_container.setStyleSheet("""
+                QWidget {
+                    background-color: transparent;
+                    border-radius: 10px;
+                    padding: 10px; /* Aumenta el área de interacción */
+                }
+                QWidget:hover {
+                    background-color: #e0e0e0; /* Color grisáceo */
+                }
+            """)
+            self.today_button_pixmap = QPixmap("src/resources/images/sidebar/today.svg")
+            self.today_button_label.setPixmap(self.today_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.calendar_button_pixmap = QPixmap("src/resources/images/sidebar/calendar_selected.svg")
+            self.calendar_button_label.setPixmap(self.calendar_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.today_button.setStyleSheet("color: black; border: none; font-size: 18px;")
+            self.calendar_button.setStyleSheet("color: #a81f00; border: none; font-size: 18px;")
