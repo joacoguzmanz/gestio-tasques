@@ -1,7 +1,7 @@
 import sys
 import os
 from PyQt5.QtWidgets import (
-    QApplication, QDialog, QVBoxLayout, QLabel, QPushButton, 
+    QApplication, QDialog, QVBoxLayout, QLabel, QPushButton, QSizePolicy,
     QGraphicsDropShadowEffect, QWidget, QLineEdit, QFrame, QComboBox, QHBoxLayout, QCalendarWidget
 )
 from PyQt5.QtCore import Qt, QPoint, QLocale, QDate, QSize
@@ -118,7 +118,7 @@ class AddTaskDialog(QDialog):
         
         self.calendar_button = QPushButton(" Hoy", self.container)  # Añadir espacio antes del texto
         self.calendar_button.setFixedWidth(110)  # Ajustar el ancho del botón
-        self.calendar_button.setFixedHeight(48)
+        self.calendar_button.setFixedHeight(54)
         self.calendar_button.clicked.connect(self.show_calendar)
 
         icon = QIcon("src/resources/images/add_task/green_date.svg")  # Cambia esto por la ruta real de tu imagen
@@ -277,6 +277,7 @@ class AddTaskDialog(QDialog):
         self.combo_box2.addItem(QIcon("src/resources/images/add_task/blue_flag.svg"), "Prioridad 3")
         self.combo_box2.addItem(QIcon("src/resources/images/add_task/white_flag.svg"), "Prioridad 4")
         self.combo_box2.setCurrentIndex(3)  # Establecer la prioridad 4 como predeterminada
+        self.combo_box2.setFixedHeight(54)
         self.combo_box2.setStyleSheet("""
             QComboBox {
             border: 1px solid #ccc;
@@ -284,29 +285,47 @@ class AddTaskDialog(QDialog):
             padding: 10px;
             font-size: 18px;
             }
-            QComboBox QAbstractItemView::item:hover {
-                selection-background-color: #d3d3d3;  /* Gris claro */
+            QComboBox:hover {
+                background-color: #f0f0f0;
             }
             QComboBox QAbstractItemView {
-                background-color: #d3d3d3;  /* Color de fondo del menú desplegable */
-                color: black;  /* Color del texto en el menú */
-                selection-background-color: #d3d3d3;
-                selection-color: black;  /* Color del texto del elemento seleccionado */
+                background-color: #7F8C8D;  /* Color de fondo del menú desplegable */
+                color: #ECF0F1;  /* Color del texto en el menú */
+                selection-background-color: #2C3E50;
+                selection-color: #ECF0F1;  /* Color del texto del elemento seleccionado */
                 border-radius: 5px;  /* Bordes redondeados */
                 outline: none;  /* Evitar el contorno */
                 padding: 5px;
                 spacing: 10px;  /* Espaciado entre las opciones */
             }
-            QComboBox:hover {
-                background-color: #f0f0f0;
+            QComboBox QAbstractItemView::item {
+                padding-left: 15px;  /* Espaciado interno izquierdo */
+                padding-right: 15px;  /* Espaciado interno derecho */
+                padding-top: 10px;  /* Espaciado interno superior */
+                padding-bottom: 10px;  /* Espaciado interno inferior */
             }
             QComboBox::drop-down {
                 border: 0px;
             }
         """)
-        self.combo_box2.setFont(inter_font)
         self.combo_box2.setCursor(Qt.PointingHandCursor)
+        self.combo_box2.setFont(inter_font)
         combo_layout.addWidget(self.combo_box2)
+
+        self.category_text = QLineEdit(self.container)
+        category_placeholders = [
+            "#Universidad", "#Trabajo", "#Personal", "#Salud", "#Finanzas",
+            "#Hogar", "#Compras", "#Viajes", "#Deportes", "#Ocio",
+            "#Familia", "#Amigos", "#Estudios", "#Proyecto", "#Reunión",
+            "#Cita", "#Evento", "#Tarea", "#Recordatorio", "#Meta"
+        ]
+        self.category_text.setPlaceholderText(random.choice(category_placeholders))
+        self.category_text.setStyleSheet("border: 1px solid #ccc; border-radius: 5px; padding: 15px; font-size: 18px;")
+        self.category_text.setFont(inter_font)
+        self.category_text.setFixedHeight(54)
+        self.category_text.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.category_text.textChanged.connect(self.ensure_hashtag)
+        combo_layout.addWidget(self.category_text)
 
         container_layout.addLayout(combo_layout)  # Agrega los elementos en una fila
         
@@ -326,6 +345,9 @@ class AddTaskDialog(QDialog):
             }
             QPushButton:hover {
             background-color: #e0e0e0;
+            }
+            QPushButton:pressed {
+            background-color: #dadada;
             }
         """)
         self.close_button.setFont(inter_font)
@@ -362,6 +384,9 @@ class AddTaskDialog(QDialog):
                     border-radius: 5px;
                 }
                 QPushButton:hover {
+                    background-color: #b43334;
+                }
+                QPushButton:pressed {
                     background-color: #a32a2b;
                 }
             """)
@@ -485,8 +510,13 @@ class AddTaskDialog(QDialog):
         # Ocultar el calendario
         self.calendar_frame.hide()
 
+    def ensure_hashtag(self):
+        text = self.category_text.text()
+        if text and not text.startswith("#"):
+            self.category_text.setText("#" + text.lstrip("#"))
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     popup = AddTaskDialog()
     popup.exec_()
-    sys.exit(app.exec_())
+    sys.exit(0)
