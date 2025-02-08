@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QVBoxLayout, QHB
 
 from view.shared.titlebar import TitleBar
 from view.shared.sidebar import SideBar
+from view.dashboard.today import Today
+from view.dashboard.calendar import Calendar
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -32,8 +34,36 @@ class MainWindow(QMainWindow):
         self.title_bar = TitleBar()
         self.layout.addWidget(self.title_bar)  # Agregar la barra de título arriba
 
+        self.content_layout = QHBoxLayout()
+        self.content_layout.setContentsMargins(0, 0, 0, 0)
+        self.content_layout.setSpacing(0)
+
         self.side_bar = SideBar()
-        self.layout.addWidget(self.side_bar)
+        self.content_layout.addWidget(self.side_bar)
+
+        self.today = Today()
+        self.content_layout.addWidget(self.today)
+
+        self.calendar = Calendar()
+
+        self.layout.addLayout(self.content_layout)
+
+        self.side_bar.switch_to_calendar.connect(self.show_calendar)
+        self.side_bar.switch_to_today.connect(self.show_today)
+
+    def show_calendar(self):
+        self.content_layout.removeWidget(self.today)
+        self.today.hide()
+        
+        self.content_layout.addWidget(self.calendar)
+        self.calendar.show()
+
+    def show_today(self):
+        self.content_layout.removeWidget(self.calendar)
+        self.calendar.hide()
+        
+        self.content_layout.addWidget(self.today)
+        self.today.show()
 
     def changeEvent(self, event):
         if event.type() == QEvent.WindowStateChange:

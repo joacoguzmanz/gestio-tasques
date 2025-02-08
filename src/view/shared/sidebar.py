@@ -6,10 +6,15 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QVBoxLayout, QHB
 
 from view.dashboard.add_task_dialog import AddTaskDialog
 from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
+from PyQt5.QtCore import pyqtSignal
 
 class SideBar(QWidget):
+    switch_to_calendar = pyqtSignal()
+    switch_to_today = pyqtSignal()
     def __init__(self):
         super().__init__()
+
+        self.setFixedWidth(400)
 
         font_id = QFontDatabase.addApplicationFont("src/resources/fonts/Inter-4.1/Inter.ttc")
         if font_id == -1:
@@ -22,33 +27,29 @@ class SideBar(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         # Crear un widget contenedor para las dos columnas y su layout
-        columns_widget = QWidget(self)  # Puedes pasar self como parent
-        columns_layout = QHBoxLayout(columns_widget)
-        columns_layout.setContentsMargins(0, 0, 0, 0)
-        columns_layout.setSpacing(0)
+        self.columns_widget = QWidget(self)  # Puedes pasar self como parent
+        self.columns_layout = QHBoxLayout(self.columns_widget)
+        self.columns_layout.setContentsMargins(0, 0, 0, 0)
+        self.columns_layout.setSpacing(0)
 
         # Widget contenedor para la columna negra
-        left_widget = QWidget(columns_widget)
+        left_widget = QWidget(self.columns_widget)
         left_widget.setStyleSheet("background-color: #fcfaf8;")
         left_widget.setFixedWidth(400)
         left_layout = QVBoxLayout(left_widget)
-        left_layout.setContentsMargins(20, 50, 10, 10)
+        left_layout.setContentsMargins(20, 20, 10, 10)
         left_layout.setSpacing(20)
         left_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
         # Widget contenedor para la columna roja
-        right_widget = QWidget(columns_widget)
-        right_widget.setStyleSheet("background-color: #ffffff;")
-        right_layout = QVBoxLayout(right_widget)
-        right_layout.setContentsMargins(10, 10, 10, 10)
-        right_layout.setSpacing(10)
 
         # Agregar las columnas al layout de columnas
-        columns_layout.addWidget(left_widget)
-        columns_layout.addWidget(right_widget)
+        self.columns_layout.addWidget(left_widget)
+
+        self.selected_option = "today"
 
         # Agregar el widget de columnas al layout principal
-        self.layout.addWidget(columns_widget)
+        self.layout.addWidget(self.columns_widget)
 
         # Fuente usada
         inter_font = QFont("Inter")
@@ -135,12 +136,9 @@ class SideBar(QWidget):
         self.today_button_container = QWidget()
         self.today_button_container.setStyleSheet("""
             QWidget {
-            background-color: transparent;
-            border-radius: 10px;
-            padding: 10px; /* Aumenta el área de interacción */
-            }
-            QWidget:hover {
-            background-color: #e0e0e0; /* Color grisáceo */
+                background-color: #ffefe5;
+                border-radius: 10px;
+                padding: 10px; /* Aumenta el área de interacción */
             }
         """)
         self.today_button_container.setCursor(Qt.PointingHandCursor)
@@ -149,12 +147,12 @@ class SideBar(QWidget):
         self.today_button_container.mouseReleaseEvent = self.today_button_clicked
 
         self.today_button = QLabel("Hoy")
-        self.today_button.setStyleSheet("color: black; border: none; font-size: 18px;")
+        self.today_button.setStyleSheet("color: #a81f00; border: none; font-size: 18px;")
         self.today_button.setFont(inter_font)
 
-        self.today_button_pixmap = QPixmap("src/resources/images/sidebar/today.svg")
+        self.today_button_pixmap = QPixmap("src/resources/images/sidebar/today_selected.svg")
         self.today_button_label = QLabel()
-        self.today_button_label.setPixmap(self.today_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))  # Set the size of the pixmap
+        self.today_button_label.setPixmap(self.today_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
         self.today_button_layout.addWidget(self.today_button_label)
         self.today_button_layout.addSpacing(-15)  # Reduce the space between the image and the text
@@ -185,7 +183,7 @@ class SideBar(QWidget):
         self.calendar_button_container.mousePressEvent = self.calendar_button_pressed
         self.calendar_button_container.mouseReleaseEvent = self.calendar_button_clicked 
 
-        self.calendar_button = QLabel("Calendario")
+        self.calendar_button = QLabel("Próximos")
         self.calendar_button.setStyleSheet("color: black; border: none; font-size: 18px;")
         self.calendar_button.setFont(inter_font)
 
@@ -198,10 +196,6 @@ class SideBar(QWidget):
         self.calendar_button_layout.addWidget(self.calendar_button)
 
         left_layout.addWidget(self.calendar_button_container)
-
-        # Ejemplo: Agregar algunos widgets a la columna roja
-        right_layout.addWidget(QPushButton("Botón Rojo 1"))
-        right_layout.addWidget(QPushButton("Botón Rojo 2"))
 
     def add_task_button_pressed(self, event):
         if event.button() == Qt.LeftButton:
@@ -231,13 +225,14 @@ class SideBar(QWidget):
 
     def today_button_pressed(self, event):
         if event.button() == Qt.LeftButton:
-            self.today_button_container.setStyleSheet("""
-                QWidget {
-                    background-color: #dadada;
-                    border-radius: 10px;
-                    padding: 10px; /* Aumenta el área de interacción */
-                }
-            """)
+            if self.selected_option != "today":
+                self.today_button_container.setStyleSheet("""
+                    QWidget {
+                        background-color: #dadada;
+                        border-radius: 10px;
+                        padding: 10px; /* Aumenta el área de interacción */
+                    }
+                """)
 
     def today_button_clicked(self, event):
         if event.button() == Qt.LeftButton:
@@ -265,16 +260,19 @@ class SideBar(QWidget):
             self.today_button_label.setPixmap(self.today_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.calendar_button.setStyleSheet("color: black; border: none; font-size: 18px;")
             self.today_button.setStyleSheet("color: #a81f00; border: none; font-size: 18px;")
+            self.selected_option = "today"
+            self.switch_to_today.emit()
 
     def calendar_button_pressed(self, event):
         if event.button() == Qt.LeftButton:
-            self.calendar_button_container.setStyleSheet("""
-                QWidget {
-                    background-color: #dadada;
-                    border-radius: 10px;
-                    padding: 10px; /* Aumenta el área de interacción */
-                }
-            """)
+            if self.selected_option != "calendar":
+                self.calendar_button_container.setStyleSheet("""
+                    QWidget {
+                        background-color: #dadada;
+                        border-radius: 10px;
+                        padding: 10px; /* Aumenta el área de interacción */
+                    }
+                """)
 
     def calendar_button_clicked(self, event):
         if event.button() == Qt.LeftButton:
@@ -302,3 +300,5 @@ class SideBar(QWidget):
             self.calendar_button_label.setPixmap(self.calendar_button_pixmap.scaled(36, 36, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.today_button.setStyleSheet("color: black; border: none; font-size: 18px;")
             self.calendar_button.setStyleSheet("color: #a81f00; border: none; font-size: 18px;")
+            self.selected_option = "calendar"
+            self.switch_to_calendar.emit()

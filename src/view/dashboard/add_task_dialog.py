@@ -2,12 +2,10 @@ import sys
 import os
 from PyQt5.QtWidgets import (
     QApplication, QDialog, QVBoxLayout, QLabel, QPushButton, 
-    QGraphicsDropShadowEffect, QWidget, QLineEdit, QFrame
+    QGraphicsDropShadowEffect, QWidget, QLineEdit, QFrame, QComboBox, QHBoxLayout, QCalendarWidget
 )
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt, QPoint, QLocale, QDate, QSize
 from PyQt5.QtGui import QColor, QFontDatabase, QFont, QIcon
-from PyQt5.QtWidgets import QComboBox, QHBoxLayout
-from PyQt5.QtWidgets import QCalendarWidget
 import random
 
 class AddTaskDialog(QDialog):
@@ -118,15 +116,22 @@ class AddTaskDialog(QDialog):
         combo_layout = QHBoxLayout()
         combo_layout.setAlignment(Qt.AlignLeft)
         
-        self.calendar_button = QPushButton("Fecha", self.container)
-        self.calendar_button.setFixedWidth(100)  # Ajustar el ancho del botón
+        self.calendar_button = QPushButton(" Hoy", self.container)  # Añadir espacio antes del texto
+        self.calendar_button.setFixedWidth(110)  # Ajustar el ancho del botón
+        self.calendar_button.setFixedHeight(48)
         self.calendar_button.clicked.connect(self.show_calendar)
+
+        icon = QIcon("src/resources/images/add_task/green_date.svg")  # Cambia esto por la ruta real de tu imagen
+        self.calendar_button.setIcon(icon)
+        self.calendar_button.setIconSize(QSize(24, 24))
+
         self.calendar_button.setStyleSheet("""
             QPushButton {
             border: 1px solid #ccc; 
             border-radius: 5px; 
             padding: 10px; 
             font-size: 18px;
+            color: #058527;
             }
             QPushButton:hover {
             background-color: #e0e0e0;
@@ -139,18 +144,132 @@ class AddTaskDialog(QDialog):
         # Crear un QFrame flotante para el calendario
         self.calendar_frame = QFrame(self)
         self.calendar_frame.setStyleSheet("background-color: transparent; border: none;")
-        self.calendar_frame.setFixedSize(220, 180)  # Ajustar tamaño del calendario
+        self.calendar_frame.setFixedSize(600, 480)  # Ajustar tamaño del calendario
         self.calendar_frame.hide()  # Ocultarlo inicialmente
         
         # Crear el calendario dentro del frame
         self.calendar = QCalendarWidget(self.calendar_frame)
-        self.calendar.setFixedSize(720, 780)  # Reducir tamaño del calendario
+        self.calendar.setFirstDayOfWeek(Qt.Monday)
+        self.calendar.setLocale(QLocale(QLocale.Spanish, QLocale.Spain))
+        today = QDate.currentDate()
+        self.calendar.setMinimumDate(today)
+        self.calendar.setFixedSize(600, 480)  # Tamaño completo del calendario
+        self.calendar.setCursor(Qt.PointingHandCursor)
         self.calendar.setStyleSheet("""
-            border: 1px solid #555;
-            border-radius: 10px;
-            background-color: #2B3E50;
+            QWidget {
+            background-color: white;
+            color: #333;
+            font-family: 'Inter';
+            outline: none;
+            }
+
+            QCalendarWidget QWidget#qt_calendar_navigationbar {
+            background-color: #f5f5f5;
+            color: black;
+            outline: none;
+            }
+
+            QCalendarWidget QToolButton {
+            color: black;
+            background-color: transparent;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            outline: none;
+            }
+
+            QCalendarWidget QToolButton:hover {
+            background-color: #e9e9e9;
+            outline: none;
+            }
+
+            QCalendarWidget QToolButton#qt_calendar_prevmonth {
+            qproperty-icon: url('src/resources/images/add_task/prev_arrow.svg');
+            }
+
+            QCalendarWidget QToolButton#qt_calendar_nextmonth {
+            qproperty-icon: url('src/resources/images/add_task/next_arrow.svg');
+            }
+
+            QCalendarWidget QAbstractItemView {
+            selection-background-color: #e0e0e0;
+            selection-color: black;
+            border-radius: 3px;
+            outline: none;
+            }
+
+            QCalendarWidget QAbstractItemView::item:disabled {
+            background-color: #f0f0f0;  /* Color gris claro para los días anteriores */
+            color: #d3d3d3;  /* Gris claro para el texto de los días anteriores */
+            }
+                
+            QCalendarWidget QAbstractItemView::item:hover {
+            background-color: #e0e0e0;
+            color: black;
+            border-radius: 3px;
+            outline: none;
+            }
+
+            QCalendarWidget QAbstractItemView:enabled {
+            color: #333;
+            background-color: white;
+            gridline-color: #ccc;
+            outline: none;
+            }
+
+            QCalendarWidget QAbstractItemView:disabled {
+            color: #aaa;
+            outline: none;
+            }
+
+            QCalendarWidget QSpinBox {
+            background-color: white;
+            color: black;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 2px;
+            outline: none;
+            }
+
+            QCalendarWidget QSpinBox::up-button, 
+            QCalendarWidget QSpinBox::down-button {
+            background-color: transparent;
+            border: none;
             color: white;
+            outline: none;
+            }
+
+            QCalendarWidget QSpinBox::up-button:hover, 
+            QCalendarWidget QSpinBox::down-button:hover {
+            background-color: transparent;
+            outline: none;
+            }
+                        
+            QCalendarWidget QSpinBox::down-button {
+            width: 0px;
+            height: 0px;
+            border: none;
+            background: transparent;
+            qproperty-icon: none;
+            }
+                                    
+            QCalendarWidget QSpinBox::drop-down {
+            width: 0px;
+            height: 0px;
+            border: none;
+            background: transparent;
+            qproperty-icon: none;
+        }
+
+            QCalendarWidget QSpinBox::up-button {
+            width: 0px;
+            height: 0px;
+            border: none;
+            background: transparent;
+            qproperty-icon: none;
+            }
         """)
+        self.calendar.selectionChanged.connect(self.day_selected)
 
         self.combo_box2 = QComboBox(self.container)
         self.combo_box2.addItem(QIcon("src/resources/images/add_task/red_flag.svg"), "Prioridad 1")
@@ -193,7 +312,8 @@ class AddTaskDialog(QDialog):
         
         # Botón de cerrar
         button_layout = QHBoxLayout()
-        button_layout.setSpacing(5)
+        button_layout.setSpacing(15)
+        button_layout.setAlignment(Qt.AlignRight)
         
         self.close_button = QPushButton("Cancelar", self.container)
         self.close_button.setStyleSheet("""
@@ -261,10 +381,109 @@ class AddTaskDialog(QDialog):
         if self.calendar_frame.isVisible():
             self.calendar_frame.hide()
         else:
-            # Posicionar el calendario justo debajo del botón
-            button_pos = self.calendar_button.mapTo(self, QPoint(0, self.calendar_button.height()))
+            # Convertir el QFrame en una ventana popup
+            self.calendar_frame.setParent(None)
+            self.calendar_frame.setWindowFlags(Qt.FramelessWindowHint | Qt.Popup)
+            # Posicionar el popup en la posición global, justo debajo del botón
+            button_pos = self.calendar_button.mapToGlobal(QPoint(0, self.calendar_button.height()))
             self.calendar_frame.move(button_pos)
             self.calendar_frame.show()
+
+    def day_selected(self):
+        # Obtener la fecha seleccionada
+        selected_date = self.calendar.selectedDate().toString("dd/MM/yyyy")
+        day, month, year = selected_date.split('/')
+        months = {
+            '01': 'Ene', '02': 'Feb', '03': 'Mar', '04': 'Abr',
+            '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Ago',
+            '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dic'
+        }
+        new_selected_date = f" {day} {months[month]}"
+        
+        # Actualizar el texto del botón con la fecha seleccionada
+        self.calendar_button.setFixedWidth(100)
+        if year != str(QDate.currentDate().year()):
+            new_selected_date += f" {year}"
+
+        if len(new_selected_date) > 7:
+            self.calendar_button.setFixedWidth(170)
+        else:
+            self.calendar_button.setFixedWidth(115)
+
+        if selected_date == QDate.currentDate().toString("dd/MM/yyyy"):
+            new_selected_date = " Hoy"
+            self.calendar_button.setStyleSheet("""
+                QPushButton {
+                border: 1px solid #ccc; 
+                border-radius: 5px; 
+                padding: 10px; 
+                font-size: 18px;
+                color: #058527;
+                }
+                QPushButton:hover {
+                background-color: #e0e0e0;
+                }
+            """)
+            icon = QIcon("src/resources/images/add_task/green_date.svg")  # Cambia esto por la ruta real de tu imagen
+            self.calendar_button.setIcon(icon)
+            self.calendar_button.setIconSize(QSize(24, 24))
+        elif selected_date == QDate.currentDate().addDays(1).toString("dd/MM/yyyy"):
+            new_selected_date = " Mañana"
+            self.calendar_button.setFixedWidth(145)
+            self.calendar_button.setStyleSheet("""
+                QPushButton {
+                border: 1px solid #ccc; 
+                border-radius: 5px; 
+                padding: 10px; 
+                font-size: 18px;
+                color: #eb8909;
+                }
+                QPushButton:hover {
+                background-color: #e0e0e0;
+                }
+            """)
+            icon = QIcon("src/resources/images/add_task/orange_date.svg")  # Cambia esto por la ruta real de tu imagen
+            self.calendar_button.setIcon(icon)
+            self.calendar_button.setIconSize(QSize(24, 24))
+        elif selected_date == QDate.currentDate().addDays(2).toString("dd/MM/yyyy"):
+            new_selected_date = " Pasado mañana"
+            self.calendar_button.setFixedWidth(190)
+            self.calendar_button.setStyleSheet("""
+                QPushButton {
+                border: 1px solid #ccc; 
+                border-radius: 5px; 
+                padding: 10px; 
+                font-size: 18px;
+                color: #692ec2;
+                }
+                QPushButton:hover {
+                background-color: #e0e0e0;
+                }
+            """)
+            icon = QIcon("src/resources/images/add_task/purple_date.svg")  # Cambia esto por la ruta real de tu imagen
+            self.calendar_button.setIcon(icon)
+            self.calendar_button.setIconSize(QSize(24, 24))
+        else:
+            self.calendar_button.setStyleSheet("""
+                QPushButton {
+                border: 1px solid #ccc; 
+                border-radius: 5px; 
+                padding: 10px; 
+                font-size: 18px;
+                color: #808080;
+                }
+                QPushButton:hover {
+                background-color: #e0e0e0;
+                }
+            """)
+            icon = QIcon("src/resources/images/add_task/black_date.svg")  # Cambia esto por la ruta real de tu imagen
+            self.calendar_button.setIcon(icon)
+            self.calendar_button.setIconSize(QSize(24, 24))
+            
+        self.calendar_button.setText(new_selected_date)
+        
+        # Ocultar el calendario
+        self.calendar_frame.hide()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
