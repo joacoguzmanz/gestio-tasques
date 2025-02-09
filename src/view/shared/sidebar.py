@@ -164,7 +164,7 @@ class SideBar(QWidget):
         
         self.calendar_button_layout = QHBoxLayout()
         self.calendar_button_layout.setAlignment(Qt.AlignLeft)
-        self.calendar_button_layout.setContentsMargins(0, 0, 200, 0)
+        self.calendar_button_layout.setContentsMargins(0, 0, 20, 0)
         # self.calendar_button_layout.mousePressEvent = self.calendar_clicked
 
         self.calendar_button_container = QWidget()
@@ -183,7 +183,7 @@ class SideBar(QWidget):
         self.calendar_button_container.mousePressEvent = self.calendar_button_pressed
         self.calendar_button_container.mouseReleaseEvent = self.calendar_button_clicked 
 
-        self.calendar_button = QLabel("Próximos")
+        self.calendar_button = QLabel("Próximas tareas")
         self.calendar_button.setStyleSheet("color: black; border: none; font-size: 18px;")
         self.calendar_button.setFont(inter_font)
 

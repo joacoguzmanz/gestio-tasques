@@ -62,7 +62,14 @@ class FiltersDialog(QDialog):
         container_layout.addWidget(self.order_label)
 
         self.priority_checkbox = QCheckBox("Prioridad", self.container)
-        self.priority_checkbox.setStyleSheet("border: 1px solid #ccc; border-radius: 5px; padding: 15px; font-size: 18px;")
+        self.priority_checkbox.setStyleSheet("""
+            QCheckBox {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 18px;
+            }
+        """)
         self.priority_checkbox.setFont(inter_font)
         self.priority_checkbox.setFixedHeight(54)
         self.priority_checkbox.setFixedWidth(250)
