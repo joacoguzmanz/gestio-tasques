@@ -1,13 +1,20 @@
 class Task:
-    def __init__(self, title, description, due_date, priority, created_at) -> None:
+    def __init__(self, title, description, due_date, priority, created_at, state="todo") -> None:
         self.title = title
         self.description = description
         self.due_date = due_date
         self.priority = priority
         self.created_at = created_at
+        self.state = state
+
+    def mark_done(self):
+        self.state = "done"
+
+    def mark_todo(self):
+        self.state = "todo"
 
     def show_task(self):
-        print(f"Title: {self.title} | Desc: {self.description} | Due date: {self.due_date} | Priority: {self.priority}")
+        print(f"Title: {self.title} | Desc: {self.description} | Due date: {self.due_date} | Priority: {self.priority} | State: {self.state}")
 
 class ListTask:
     def __init__(self) -> None:

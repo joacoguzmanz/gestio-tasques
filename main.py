@@ -1,12 +1,19 @@
-import task
+from datetime import datetime
+from src.models.tasks import Task
 
 if __name__ == "__main__":
-    my_tasks = task.ListTask()
-    new_task = task.Task("Comer", "28/01", "high", "27/01", "Probando")
-    other_task = task.Task("Dormir", "28/01", "high", "27/01", "Otra prueba")
+    # Example without a due date.
+    task1 = Task("Buy groceries", "Milk, eggs, bread", priority=2)
 
-    my_tasks.add_task(new_task)
-    my_tasks.add_task(other_task)
+    # Example with a due date.
+    due = datetime(2025, 2, 15, 17, 0)  # Example due date: Feb 15, 2025 at 17:00
+    task2 = Task("Write report", "Complete the annual report", priority=1, due_date=due)
 
-    my_tasks.show_tasks()
+    print(task1)
+    print(task2)
+
+    # Mark task1 as done and display its updated state.
+    task1.mark_done()
+    print("After marking task1 done:")
+    print(task1)
 
