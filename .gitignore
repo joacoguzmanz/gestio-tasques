@@ -1,2 +1,6 @@
 venv/
 __pycache__/
+/src/resources/fonts/Inter-4.1/extras/
+/src/resources/fonts/Inter-4.1/web/
+/src/resources/fonts/Inter-4.1/help.txt
+/src/resources/fonts/Inter-4.1/LICENSE.txt
