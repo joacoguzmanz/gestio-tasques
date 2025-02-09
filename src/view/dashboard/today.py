@@ -119,6 +119,20 @@ class Today(QWidget):
 
         prioridad3 = "orange"
 
+        def remove_task(checkbox):
+            if checkbox.isChecked():
+                checkbox.setParent(None)  # Elimina el widget del layout
+                checkbox.deleteLater()  # Elimina el widget de la memoria
+                remaining_tasks = 0
+                for i in range(self.tasks_layout.count()):
+                    widget = self.tasks_layout.itemAt(i).widget()
+                    if isinstance(widget, QCheckBox):
+                        remaining_tasks += 1
+                if remaining_tasks == 0:
+                    self.no_tasks_image.show()
+                    self.no_tasks_text.show()
+                    self.no_tasks_description.show()
+
         for i in range(1, 12):
             task_checkbox = QCheckBox(f"  Tarea {i}")
             task_checkbox.setFont(inter_font)
@@ -132,16 +146,13 @@ class Today(QWidget):
             border: 2px solid {prioridad3};
             background-color: #ffffff;
             }}
-            QCheckBox::indicator:checked {{
-            border: 2px solid {prioridad3};
-            background-color: black;
-            }}
             QCheckBox::indicator:unchecked:hover {{
             border: 2px solid {prioridad3};
             background-color: #fbe7ce;
             }}
             """)
             task_checkbox.setCursor(Qt.PointingHandCursor)
+            task_checkbox.stateChanged.connect(lambda state, checkbox=task_checkbox: remove_task(checkbox))
             self.tasks_layout.addWidget(task_checkbox)
 
         # Agregamos el layout de tareas a right_layout
