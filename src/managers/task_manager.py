@@ -15,9 +15,26 @@ class TaskManager:
     def __init__(self) -> None:
         """Initialize the Task Manager with an empty dictionary of projects."""
         self.projects: Dict[str, Project] = {}
+        self._undo_stack: List[Dict] = []
+        self._redo_stack: List[Dict] = []
 
         inbox = Project("Inbox")
         self.projects[inbox.uuid] = inbox
+
+    def _save_state(self) -> None:
+        state = {
+            "projects": {project.uuid: project.__dict__ for project in self.projects.values()}
+        }
+        self._undo_stack.append(state)
+        self._redo_stack.clear()
+
+# def _restore_state(self) -> None:
+#     self.projects = {}
+#     for project_uuid, project_data in state["projects"].items():
+#         project = Project(project_data["name"])
+#         project.uuid = project_uuid
+#         project.tasks = [Task(**task_data) for task_data in project_data["tasks"]]
+#         self.projects[project_uuid] = project*/}
 
     def create_project(self, project_name: str) -> str:
         project = Project(project_name)
@@ -114,5 +131,24 @@ class TaskManager:
         else:
             print(f"Project '{project_id}' not found.")
             return []
+
+    def get_all_tasks(self) -> List[Task]:
+        all_tasks = []
+        for project in self.projects.values():
+            all_tasks.extend(project.tasks)
+        return all_tasks
+
+    def get_tasks_sorted_by_priority(self) -> List[Task]:
+        all_tasks = self.get_all_tasks()
+        return sorted(all_tasks, key=lambda t: t.priority)
+
+    def sort_tasks_ids_by_priority(self, task_ids: List[str]) -> List[str]:
+        all_tasks = self.get_all_tasks()
+        task_map = {task.uuid: task for task in all_tasks}
+        sorted_tasks = sorted(
+            [task_map[task_id] for task_id in task_ids if task_id in task_map],
+            key=lambda t: t.priority
+        )
+        return [task.uuid for task in sorted_tasks]
 
 
