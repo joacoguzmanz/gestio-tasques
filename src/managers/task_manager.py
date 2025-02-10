@@ -4,6 +4,14 @@ from models.projects import Project
 from models.tasks import Task
 
 class TaskManager:
+    _instance = None
+
+    @staticmethod
+    def get_instance():
+        if TaskManager._instance is None:
+            TaskManager._instance = TaskManager()
+        return TaskManager._instance
+
     def __init__(self) -> None:
         """Initialize the Task Manager with an empty dictionary of projects."""
         self.projects: Dict[str, Project] = {}
@@ -27,8 +35,8 @@ class TaskManager:
             return False
 
     def add_task_to_project(self, project_id: str, task: Task) -> None:
-        if project_id not in self.projects:
-            project_id = self.projects["Inbox"].uuid
+        if not project_id or project_id not in self.projects:
+            project_id = list(self.projects.values())[0].uuid
         self.projects[project_id].add_task(task)
         print(f"Task '{task.title}' added to project '{self.projects[project_id].name}' (ID: {project_id}).")
 
