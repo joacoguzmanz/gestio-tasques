@@ -15,9 +15,10 @@ if __name__ == "__main__":
     print("\nProjects in Prat")
     t_manager.list_tasks_in_project(prat_project)
     print("--------")
-    t_manager.add_task_to_project(prat_project, new_task)
+    t_manager.add_task_to_project("", new_task)
     print("\nUpdate projects in Prat")
     t_manager.list_tasks_in_project(prat_project)
+    t_manager.list_tasks_in_project(list(t_manager.projects.values())[0].uuid)
     print("--------")
     # t_manager.add_task_to_project(other_task)
 
