@@ -115,4 +115,14 @@ class TaskManager:
             print(f"Project '{project_id}' not found.")
             return []
 
+    def get_all_tasks(self) -> List[Task]:
+        all_tasks = []
+        for project in self.projects.values():
+            all_tasks.extend(project.tasks)
+        return all_tasks
+
+    def get_tasks_sorted_by_priority(self) -> List[Task]:
+        all_tasks = self.get_all_tasks()
+        return sorted(all_tasks, key=lambda t: t.priority)
+
 

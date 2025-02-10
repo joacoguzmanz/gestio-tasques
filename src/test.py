@@ -1,10 +1,10 @@
 from managers.task_manager import TaskManager
 from models.tasks import Task
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 from random import randint, choice
 
 def generate_random_tasks():
-    priorities = range(1, 4)  # 1: High, 2: Medium, 3: Low
+    priorities = range(1, 5)  # 1: High, 2: Medium, 3: Low, 4: Deep
     descriptions = [
         "Review documentation", "Prepare presentation", "Client meeting",
         "Code review", "Bug fixing", "Team sync", "Project planning",
@@ -58,3 +58,17 @@ if __name__ == "__main__":
         task_details = t_manager.get_task_details(task_uuid)
         if task_details:
             print(f"- {task_details['title']} (ID: {task_uuid}, Due: {task_details['due_date']})")
+
+    # Test get_tasks_sorted_by_priority
+    sorted_tasks = t_manager.get_tasks_sorted_by_priority()
+    print("\n--------\n")
+    print("Tasks sorted by priority:")
+    for task in sorted_tasks:
+        print(f"- {task.title} (Priority: {task.priority})")
+
+    # Test get_all_tasks
+    all_tasks = t_manager.get_all_tasks()
+    print("\n--------\n")
+    print("All tasks across all projects:")
+    for task in all_tasks:
+        print(f"- {task.title} (Priority: {task.priority})")
