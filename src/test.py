@@ -72,3 +72,15 @@ if __name__ == "__main__":
     print("All tasks across all projects:")
     for task in all_tasks:
         print(f"- {task.title} (Priority: {task.priority})")
+
+    # Test get_tasks_by_priority
+    print("\n--------\n")
+    print("Testing get_tasks_by_priority:")
+    for priority in range(1, 5):  # Priorities 1 to 4
+        tasks_with_priority = t_manager.get_tasks_by_priority(priority)
+        print(f"\nTasks with priority {priority}:")
+        for task_uuid in tasks_with_priority:
+            task_details = t_manager.get_task_details(task_uuid)
+            if task_details:
+                print(f"- {task_details['title']} (ID: {task_uuid}, Priority: {task_details['priority']})")
+
