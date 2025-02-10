@@ -83,6 +83,7 @@ class TaskManager:
                 if task.uuid == task_id:
                     return {
                         "project": project.name,
+                        "project_uuid": project.uuid,
                         "uuid": task.uuid,
                         "title": task.title,
                         "description": task.description,
