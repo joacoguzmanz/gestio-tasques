@@ -6,41 +6,43 @@ from models.tasks import Task
 class TaskManager:
     def __init__(self) -> None:
         """Initialize the Task Manager with an empty dictionary of projects."""
-        self.projects: Dict[str, Project] = {"Inbox": Project("Inbox")}
+        self.projects: Dict[str, Project] = {}
 
-    def create_project(self, project_name: str) -> None:
-        if project_name in self.projects:
-            print(f"Project '{project_name}' already exists.")
-        else:
-            self.projects[project_name] = Project(project_name)
-            print(f"Project '{project_name}' created.")
+        inbox = Project("Inbox")
+        self.projects[inbox.uuid] = inbox
 
-    def delete_project(self, project_name: str) -> bool:
-        if project_name in self.projects:
-            del self.projects[project_name]
-            print(f"Project '{project_name}' deleted.")
+    def create_project(self, project_name: str) -> str:
+        project = Project(project_name)
+        self.projects[project.uuid] = project
+        print(f"Project '{project_name}' created with ID {project.uuid}.")
+        return project.uuid
+
+    def delete_project(self, project_id: str) -> bool:
+        if project_id in self.projects:
+            del self.projects[project_id]
+            print(f"Project '{project_id}' deleted.")
             return True
         else:
-            print(f"Project '{project_name}' not found.")
+            print(f"Project '{project_id}' not found.")
             return False
 
-    def add_task_to_project(self, task: Task, project_name: str="Inbox") -> None:
-        if project_name not in self.projects:
-            print(f"Project '{project_name}' does not exist. Creating it now.")
-            self.create_project(project_name)
-        self.projects[project_name].add_task(task)
-        print(f"Task '{task.title}' added to project '{project_name}'.")
+    def add_task_to_project(self, project_id: str, task: Task) -> None:
+        if project_id not in self.projects:
+            print(f"Project '{project_id}' does not exist.")
+            return
+        self.projects[project_id].add_task(task)
+        print(f"Task '{task.title}' added to project '{project_id}'.")
 
-    def remove_task_from_project(self, project_name: str, task_id: str) -> bool:
-        if project_name in self.projects:
-            success = self.projects[project_name].remove_task(task_id)
+    def remove_task_from_project(self, project_id: str, task_id: str) -> bool:
+        if project_id in self.projects:
+            success = self.projects[project_id].remove_task(task_id)
             if success:
-                print(f"Task '{task_id}' removed from project '{project_name}'.")
+                print(f"Task '{task_id}' removed from project '{self.projects[project_id].name}'.")
             else:
-                print(f"Task '{task_id}' not found in project '{project_name}'.")
+                print(f"Task '{task_id}' not found in project '{self.projects[project_id].name}'.")
             return success
         else:
-            print(f"Project '{project_name}' not found.")
+            print(f"Project '{project_id}' not found.")
             return False
 
     def list_projects(self) -> None:
@@ -48,14 +50,14 @@ class TaskManager:
             print("No projects available.")
         else:
             print("Projects:")
-            for project_name in self.projects.keys():
-                print(f"- {project_name}")
+            for project in self.projects.values():
+                print(f"- {project.name} (ID: {project.uuid})")
 
-    def list_tasks_in_project(self, project_name: str) -> None:
-        if project_name in self.projects:
-            self.projects[project_name].list_tasks()
+    def list_tasks_in_project(self, project_id: str) -> None:
+        if project_id in self.projects:
+            self.projects[project_id].list_tasks()
         else:
-            print(f"Project '{project_name}' not found.")
+            print(f"Project '{project_id}' not found.")
 
     def get_tasks_due_today(self) -> list[str]:
         today = datetime.now().date()
@@ -69,11 +71,11 @@ class TaskManager:
         return due_today
 
     def get_task_details(self, task_id: str) -> Optional[dict]:
-        for project_name, project in self.projects.items():
+        for project in self.projects.values():
             for task in project.tasks:
                 if task.uuid == task_id:
                     return {
-                        "project": project_name,
+                        "project": project.name,
                         "uuid": task.uuid,
                         "title": task.title,
                         "description": task.description,
@@ -96,11 +98,11 @@ class TaskManager:
 
         return matching_tasks
 
-    def get_tasks_by_project(self, project_name: str) -> List[str]:
-        if project_name in self.projects:
-            return [task.uuid for task in self.projects[project_name].tasks]
+    def get_tasks_by_project(self, project_id: str) -> List[str]:
+        if project_id in self.projects:
+            return [task.uuid for task in self.projects[project_id].tasks]
         else:
-            print(f"Project '{project_name}' not found.")
+            print(f"Project '{project_id}' not found.")
             return []
 
 
