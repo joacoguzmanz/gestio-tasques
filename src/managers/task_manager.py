@@ -72,9 +72,11 @@ class TaskManager:
 
         for project in self.projects.values():
             for task in project.tasks:
-                if task.due_date and task.due_date.date() == today:
+                if task.due_date and isinstance(task.due_date, datetime):
+                    if task.due_date.date() == today:
+                        due_today.append(task.uuid)
+                elif task.due_date == today:
                     due_today.append(task.uuid)
-
         return due_today
 
     def get_task_details(self, task_id: str) -> Optional[dict]:
