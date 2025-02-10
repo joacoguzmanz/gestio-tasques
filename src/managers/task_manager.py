@@ -4,6 +4,14 @@ from models.projects import Project
 from models.tasks import Task
 
 class TaskManager:
+    _instance = None
+
+    @staticmethod
+    def get_instance():
+        if TaskManager._instance is None:
+            TaskManager._instance = TaskManager()
+        return TaskManager._instance
+
     def __init__(self) -> None:
         """Initialize the Task Manager with an empty dictionary of projects."""
         self.projects: Dict[str, Project] = {}
