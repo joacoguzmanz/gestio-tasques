@@ -31,56 +31,30 @@ if __name__ == "__main__":
 
     # Create projects
     prat_p = t_manager.create_project("Prat")
-    work_p = t_manager.create_project("Work")
+    # work_p = t_manager.create_project("Work")
 
     # List projects
     print("\n--------\n")
-    t_manager.list_projects()
+    # t_manager.list_projects()
+    t_manager.print_state()
     print("\n--------\n")
 
-    # Add tasks to projects randomly
-    for task in gen_tasks:
-        project_id = choice([prat_p, work_p])  # Randomly choose a project
-        t_manager.add_task_to_project(project_id, task)
+    task = Task("Task 1", "Description 1", priority=1)
+    t_manager.add_task_to_project(prat_p, task)
+    t_manager.print_state()
 
-    # List tasks in both projects
-    print("\nTasks in 'Prat' project:")
-    t_manager.list_tasks_in_project(prat_p)
+    t_manager.undo()
+    t_manager.print_state()
 
-    print("\nTasks in 'Work' project:")
-    t_manager.list_tasks_in_project(work_p)
+    t_manager.redo()
+    t_manager.print_state()
 
-    # Test get_tasks_due_today
-    tasks_due_today = t_manager.get_tasks_due_today()
-    print("\n--------\n")
-    print("Tasks due today:")
-    for task_uuid in tasks_due_today:
-        task_details = t_manager.get_task_details(task_uuid)
-        if task_details:
-            print(f"- {task_details['title']} (ID: {task_uuid}, Due: {task_details['due_date']})")
+    t_manager.delete_project(prat_p)
+    t_manager.print_state()
 
-    # Test get_tasks_sorted_by_priority
-    sorted_tasks = t_manager.get_tasks_sorted_by_priority()
-    print("\n--------\n")
-    print("Tasks sorted by priority:")
-    for task in sorted_tasks:
-        print(f"- {task.title} (Priority: {task.priority})")
+    t_manager.undo()
+    t_manager.print_state()
 
-    # Test get_all_tasks
-    all_tasks = t_manager.get_all_tasks()
-    print("\n--------\n")
-    print("All tasks across all projects:")
-    for task in all_tasks:
-        print(f"- {task.title} (Priority: {task.priority})")
-
-    # Test get_tasks_by_priority
-    print("\n--------\n")
-    print("Testing get_tasks_by_priority:")
-    for priority in range(1, 5):  # Priorities 1 to 4
-        tasks_with_priority = t_manager.get_tasks_by_priority(priority)
-        print(f"\nTasks with priority {priority}:")
-        for task_uuid in tasks_with_priority:
-            task_details = t_manager.get_task_details(task_uuid)
-            if task_details:
-                print(f"- {task_details['title']} (ID: {task_uuid}, Priority: {task_details['priority']})")
+    t_manager.redo()
+    t_manager.print_state()
 
