@@ -8,8 +8,6 @@ from PyQt5.QtCore import Qt, QPoint, QLocale, QDate, QSize
 from PyQt5.QtGui import QColor, QFontDatabase, QFont, QIcon
 import random
 
-# from managers.task_manager import TaskManager
-
 class AddTaskDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -55,11 +53,6 @@ class AddTaskDialog(QDialog):
         container_layout = QVBoxLayout(self.container)
         container_layout.setContentsMargins(20, 20, 20, 20)
         container_layout.setSpacing(10)
-
-        self.text_container = QVBoxLayout()
-        self.text_container.setContentsMargins(0, 0, 0, 0)
-        self.text_container.setSpacing(5)
-        self.text_container.setAlignment(Qt.AlignTop)
         
         self.title_input = QLineEdit(self.container)
         placeholder_texts = [
@@ -117,15 +110,7 @@ class AddTaskDialog(QDialog):
         self.title_input.setStyleSheet("border: none; border-radius: 5px; padding: 15px; font-size: 24px;")
         self.title_input.setFont(inter_font)
         self.title_input.textChanged.connect(self.add_task_button_available)
-        self.text_container.addWidget(self.title_input)
-
-        self.description_input = QLineEdit(self.container)
-        self.description_input.setPlaceholderText("Descripción")
-        self.description_input.setStyleSheet("border: none; border-radius: 5px; padding-left: 15px; font-size: 14px;")
-        self.description_input.setFont(inter_font)
-        self.text_container.addWidget(self.description_input)
-
-        container_layout.addLayout(self.text_container)
+        container_layout.addWidget(self.title_input)
         
         # Layout para el botón de calendario y el combobox
         combo_layout = QHBoxLayout()
@@ -381,6 +366,7 @@ class AddTaskDialog(QDialog):
         """)
         self.add_task_button.setFont(inter_font)
         self.add_task_button.setCursor(Qt.ForbiddenCursor)
+        # self.add_task_button.clicked.connect()
         button_layout.addWidget(self.add_task_button, alignment=Qt.AlignRight)
         
         container_layout.addLayout(button_layout)
@@ -405,8 +391,6 @@ class AddTaskDialog(QDialog):
                 }
             """)
             self.add_task_button.setCursor(Qt.PointingHandCursor)
-            # self.task_manager = TaskManager()
-            # self.add_task_button.clicked.connect(self.project.add_task)
         else:  # Si no hay texto en el input
             self.add_task_button.setStyleSheet("""
                 QPushButton {
