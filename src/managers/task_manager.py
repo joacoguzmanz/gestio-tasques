@@ -28,10 +28,9 @@ class TaskManager:
 
     def add_task_to_project(self, project_id: str, task: Task) -> None:
         if project_id not in self.projects:
-            print(f"Project '{project_id}' does not exist.")
-            return
+            project_id = self.projects["Inbox"].uuid
         self.projects[project_id].add_task(task)
-        print(f"Task '{task.title}' added to project '{project_id}'.")
+        print(f"Task '{task.title}' added to project '{self.projects[project_id].name}' (ID: {project_id}).")
 
     def remove_task_from_project(self, project_id: str, task_id: str) -> bool:
         if project_id in self.projects:
