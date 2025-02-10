@@ -1,11 +1,12 @@
-from typing import Dict
+from datetime import datetime
+from typing import Dict, List, Optional
 from models.projects import Project
-from task import Task
+from models.tasks import Task
 
 class TaskManager:
     def __init__(self) -> None:
         """Initialize the Task Manager with an empty dictionary of projects."""
-        self.projects: Dict[str, Project] = {}
+        self.projects: Dict[str, Project] = {"Inbox": Project("Inbox")}
 
     def create_project(self, project_name: str) -> None:
         if project_name in self.projects:
@@ -23,7 +24,7 @@ class TaskManager:
             print(f"Project '{project_name}' not found.")
             return False
 
-    def add_task_to_project(self, project_name: str, task: Task) -> None:
+    def add_task_to_project(self, task: Task, project_name: str="Inbox") -> None:
         if project_name not in self.projects:
             print(f"Project '{project_name}' does not exist. Creating it now.")
             self.create_project(project_name)
@@ -55,3 +56,51 @@ class TaskManager:
             self.projects[project_name].list_tasks()
         else:
             print(f"Project '{project_name}' not found.")
+
+    def get_tasks_due_today(self) -> list[str]:
+        today = datetime.now().date()
+        due_today = []
+
+        for project in self.projects.values():
+            for task in project.tasks:
+                if task.due_date and task.due_date.date() == today:
+                    due_today.append(task.uuid)
+
+        return due_today
+
+    def get_task_details(self, task_id: str) -> Optional[dict]:
+        for project_name, project in self.projects.items():
+            for task in project.tasks:
+                if task.uuid == task_id:
+                    return {
+                        "project": project_name,
+                        "uuid": task.uuid,
+                        "title": task.title,
+                        "description": task.description,
+                        "priority": task.priority,
+                        "state": task.state,
+                        "due_date": task.due_date.strftime("%Y-%m-%d %H:%M:%S") if task.due_date else "No due date",
+                        "created_at": task.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                    }
+
+        print(f"Task with ID '{task_id}' not found.")
+        return None
+
+    def get_tasks_by_priority(self, priority: int) -> List[str]:
+        matching_tasks = []
+
+        for project in self.projects.values():
+            for task in project.tasks:
+                if task.priority == priority:
+                    matching_tasks.append(task.uuid)
+
+        return matching_tasks
+
+    def get_tasks_by_project(self, project_name: str) -> List[str]:
+        if project_name in self.projects:
+            return [task.uuid for task in self.projects[project_name].tasks]
+        else:
+            print(f"Project '{project_name}' not found.")
+            return []
+
+
