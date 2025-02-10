@@ -1,28 +1,60 @@
 from managers.task_manager import TaskManager
 from models.tasks import Task
-from datetime import datetime
+from datetime import datetime, timedelta, date
+from random import randint, choice
+
+def generate_random_tasks():
+    priorities = range(1, 4)  # 1: High, 2: Medium, 3: Low
+    descriptions = [
+        "Review documentation", "Prepare presentation", "Client meeting",
+        "Code review", "Bug fixing", "Team sync", "Project planning",
+        "Write report", "Update dashboard", "Testing"
+    ]
+
+    tasks = []
+    for i in range(10):
+        # Randomly assign due dates: some today, some in the past, some in the future
+        due_date = datetime.now() + timedelta(days=randint(-1, 7))
+        task = Task(
+            title=f"Task {i+1}",
+            description=choice(descriptions),
+            priority=choice(priorities),
+            due_date=due_date
+        )
+        tasks.append(task)
+
+    return tasks
 
 if __name__ == "__main__":
     t_manager = TaskManager()
+    gen_tasks = generate_random_tasks()
+
+    # Create projects
+    prat_p = t_manager.create_project("Prat")
+    work_p = t_manager.create_project("Work")
+
+    # List projects
+    print("\n--------\n")
     t_manager.list_projects()
+    print("\n--------\n")
 
-    new_task = Task(title="Test Task 1", description="This is a test task", priority=1, due_date=datetime.now())
-    other_task = Task(title="Some new task", description="This is a other task", priority=1, due_date=datetime.now())
+    # Add tasks to projects randomly
+    for task in gen_tasks:
+        project_id = choice([prat_p, work_p])  # Randomly choose a project
+        t_manager.add_task_to_project(project_id, task)
 
-    prat_project = t_manager.create_project("Prat")
-    print("Show projects")
-    t_manager.list_projects()
-    print("\nProjects in Prat")
-    t_manager.list_tasks_in_project(prat_project)
-    print("--------")
-    t_manager.add_task_to_project("", new_task)
-    print("\nUpdate projects in Prat")
-    t_manager.add_task_to_project(prat_project, other_task)
-    t_manager.list_tasks_in_project(prat_project)
-    t_manager.list_tasks_in_project(list(t_manager.projects.values())[0].uuid)
-    print("--------")
-    print(t_manager.get_task_details(other_task.uuid))
-    t_manager.remove_task_from_project(prat_project, other_task.uuid)
-    t_manager.list_tasks_in_project(prat_project)
-    # t_manager.add_task_to_project(other_task)
+    # List tasks in both projects
+    print("\nTasks in 'Prat' project:")
+    t_manager.list_tasks_in_project(prat_p)
 
+    print("\nTasks in 'Work' project:")
+    t_manager.list_tasks_in_project(work_p)
+
+    # Test get_tasks_due_today
+    tasks_due_today = t_manager.get_tasks_due_today()
+    print("\n--------\n")
+    print("Tasks due today:")
+    for task_uuid in tasks_due_today:
+        task_details = t_manager.get_task_details(task_uuid)
+        if task_details:
+            print(f"- {task_details['title']} (ID: {task_uuid}, Due: {task_details['due_date']})")
