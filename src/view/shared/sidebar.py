@@ -209,7 +209,6 @@ class SideBar(QWidget):
 
     def add_task_button_clicked(self, event):
         if event.button() == Qt.LeftButton:
-            print("Add task clicked")
             self.add_task_button_container.setStyleSheet("""
                 QWidget {
                     background-color: transparent;
@@ -236,7 +235,6 @@ class SideBar(QWidget):
 
     def today_button_clicked(self, event):
         if event.button() == Qt.LeftButton:
-            print("today changed")
             self.today_button_container.setStyleSheet("""
                 QWidget {
                     background-color: #ffefe5;
@@ -276,7 +274,6 @@ class SideBar(QWidget):
 
     def calendar_button_clicked(self, event):
         if event.button() == Qt.LeftButton:
-            print("Add task clicked")
             self.calendar_button_container.setStyleSheet("""
                 QWidget {
                     background-color: #ffefe5;

@@ -37,9 +37,15 @@ class TaskManager:
 #         self.projects[project_uuid] = project*/}
 
     def create_project(self, project_name: str) -> str:
+        for project in self.projects.values():
+            if project.name == project_name:
+                print(f"⚠️ El proyecto '{project_name}' ya existe con ID {project.uuid}.")
+                return project.uuid  # Devuelve el ID del proyecto existente
+
+        # Si no existe, lo crea
         project = Project(project_name)
         self.projects[project.uuid] = project
-        print(f"Project '{project_name}' created with ID {project.uuid}.")
+        print(f"✅ Proyecto '{project_name}' creado con ID {project.uuid}.")
         return project.uuid
 
     def delete_project(self, project_id: str) -> bool:
@@ -114,6 +120,14 @@ class TaskManager:
 
         print(f"Task with ID '{task_id}' not found.")
         return None
+    
+    def get_project_id_by_name(self, project_name: str) -> Optional[str]:
+        for project_id, project in self.projects.items():
+            if project.name == project_name:
+                return project_id
+        print(f"❌ Proyecto '{project_name}' no encontrado.")
+        return None  # Devuelve None si no se encuentra
+
 
     def get_tasks_by_priority(self, priority: int) -> List[str]:
         matching_tasks = []
@@ -127,6 +141,8 @@ class TaskManager:
 
     def get_tasks_by_project(self, project_id: str) -> List[str]:
         if project_id in self.projects:
+            print(project_id)
+            print(self.projects)
             return [task.uuid for task in self.projects[project_id].tasks]
         else:
             print(f"Project '{project_id}' not found.")
@@ -137,6 +153,9 @@ class TaskManager:
         for project in self.projects.values():
             all_tasks.extend(project.tasks)
         return all_tasks
+    
+    def get_all_task_ids(self) -> List[str]:
+        return [task.uuid for project in self.projects.values() for task in project.tasks]
 
     def get_tasks_sorted_by_priority(self) -> List[Task]:
         all_tasks = self.get_all_tasks()
@@ -151,4 +170,11 @@ class TaskManager:
         )
         return [task.uuid for task in sorted_tasks]
 
-
+    def get_all_task_ids_sorted_by_due_date(self) -> List[str]:
+        return [
+            task.uuid
+            for task in sorted(
+                (task for project in self.projects.values() for task in project.tasks),
+                key=lambda t: t.due_date if t.due_date else datetime.max  # Tareas sin fecha van al final
+            )
+        ]

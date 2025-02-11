@@ -5,11 +5,17 @@ from PyQt5.QtGui import QIcon, QFontDatabase, QFont, QPixmap, QPainter
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QCheckBox, QScrollArea
 
 from view.dashboard.filters_dialog import FiltersDialog
+# from view.dashboard.task_details_dialog import TaskDetailsDialog
+from controller.task_manager_controller import remove_task_from_project_controller, get_task_due_today_controller, get_task_details_controller, get_tasks_by_priority_controller, get_project_id_by_name_controller, get_tasks_by_project_controller
+from src.view.dashboard.signal_bus import global_signals
 
 class Today(QWidget):
     def __init__(self):
         super().__init__()
-
+        
+        global_signals.taskAdded.connect(self.task_added)
+        global_signals.filtersChanged.connect(self.filters_changed)
+        
         font_id = QFontDatabase.addApplicationFont("src/resources/fonts/Inter-4.1/Inter.ttc")
         if font_id == -1:
             print("Error al cargar la fuente")
@@ -25,6 +31,7 @@ class Today(QWidget):
         right_widget = QWidget()
         right_widget.setStyleSheet("background-color: #ffffff;")
         right_layout = QVBoxLayout(right_widget)
+        right_layout.setAlignment(Qt.AlignTop)
         right_layout.setContentsMargins(10, 10, 10, 10)
         right_layout.setSpacing(0)
 
@@ -108,53 +115,6 @@ class Today(QWidget):
 
 #######################################################
 
-        self.no_tasks_image.hide()
-        self.no_tasks_text.hide()
-        self.no_tasks_description.hide()
-
-        self.tasks_layout.setContentsMargins(140, 0, 0, 529)
-        self.tasks_layout.setSpacing(20)
-        self.tasks_layout.setAlignment(Qt.AlignLeft)
-        self.tasks_layout.setAlignment(Qt.AlignTop)
-
-        prioridad3 = "orange"
-
-        def remove_task(checkbox):
-            if checkbox.isChecked():
-                checkbox.setParent(None)  # Elimina el widget del layout
-                checkbox.deleteLater()  # Elimina el widget de la memoria
-                remaining_tasks = 0
-                for i in range(self.tasks_layout.count()):
-                    widget = self.tasks_layout.itemAt(i).widget()
-                    if isinstance(widget, QCheckBox):
-                        remaining_tasks += 1
-                if remaining_tasks == 0:
-                    self.no_tasks_image.show()
-                    self.no_tasks_text.show()
-                    self.no_tasks_description.show()
-
-        for i in range(1, 12):
-            task_checkbox = QCheckBox(f"  Tarea {i}")
-            task_checkbox.setFont(inter_font)
-            task_checkbox.setStyleSheet(f"""
-            QCheckBox::indicator {{
-            width: 22.5px;
-            height: 22.5px;
-            border-radius: 12px;
-            }}
-            QCheckBox::indicator:unchecked {{
-            border: 2px solid {prioridad3};
-            background-color: #ffffff;
-            }}
-            QCheckBox::indicator:unchecked:hover {{
-            border: 2px solid {prioridad3};
-            background-color: #fbe7ce;
-            }}
-            """)
-            task_checkbox.setCursor(Qt.PointingHandCursor)
-            task_checkbox.stateChanged.connect(lambda state, checkbox=task_checkbox: remove_task(checkbox))
-            self.tasks_layout.addWidget(task_checkbox)
-
         # Agregamos el layout de tareas a right_layout
         right_layout.addLayout(self.tasks_layout)
 
@@ -173,3 +133,277 @@ class Today(QWidget):
     def show_filter_dialog(self):
         self.filter_dialog = FiltersDialog()
         self.filter_dialog.show()
+
+    # def description_button_clicked(self, i):
+    #     task_id = i
+    #     self.task_details_dialog = TaskDetailsDialog(task_id=task_id)
+    #     self.task_details_dialog.show()
+    
+    def clear_tasks_layout(self):
+        # Mientras haya elementos en el layout...
+        while self.tasks_layout.count() > 0:
+            # Toma el primer elemento del layout
+            item = self.tasks_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                # Solo eliminamos las tareas, no los widgets estáticos
+                if widget != self.no_tasks_image and widget != self.no_tasks_text and widget != self.no_tasks_description:
+                    widget.setParent(None)
+                    widget.deleteLater()
+
+    def task_added(self):
+        self.clear_tasks_layout()
+
+        ids_task_to_show = get_task_due_today_controller()
+        if not ids_task_to_show:
+            return
+        inter_font = QFont("Inter")
+        self.no_tasks_image.hide()
+        self.no_tasks_text.hide()
+        self.no_tasks_description.hide()
+
+        self.tasks_layout.setContentsMargins(140, 0, 0, 100)
+        self.tasks_layout.setSpacing(20)
+        self.tasks_layout.setAlignment(Qt.AlignLeft)
+        self.tasks_layout.setAlignment(Qt.AlignTop)
+
+        def remove_task(checkbox, container, task_id):
+            if checkbox.isChecked():
+                # success = remove_task_from_project_controller(checkbox.text().strip(), checkbox)
+                container.setParent(None)
+                container.deleteLater()  # Elimina el widget de la memoria
+                remaining_tasks = 0
+                for i in range(self.tasks_layout.count()):
+                    widget = self.tasks_layout.itemAt(i).widget()
+                    # Supongamos que tus contenedores de tareas tienen un nombre o propiedad
+                    if widget and widget.property("isTaskContainer"):
+                        remaining_tasks += 1
+                task_details  = get_task_details_controller(task_id)
+                project_id = task_details["project_uuid"]
+                uuid = task_details["uuid"]
+                title = task_details["title"]
+                description = task_details["description"]
+                priority = task_details["priority"]
+
+                remove_task_from_project_controller(project_id, task_id)
+                if remaining_tasks == 0:
+                    self.no_tasks_image.show()
+                    self.no_tasks_text.show()
+                    self.no_tasks_description.show()
+
+        for i in (ids_task_to_show):
+            single_task_container = QWidget()
+            single_task_container.setProperty("isTaskContainer", True)
+            container_layout = QVBoxLayout(single_task_container)
+            container_layout.setContentsMargins(0, 0, 0, 0)
+            container_layout.setSpacing(2)
+
+            task_details  = get_task_details_controller(i)
+            project = task_details["project"]
+            uuid = task_details["uuid"]
+            title = task_details["title"]
+            description = task_details["description"]
+            priority = task_details["priority"]
+            secondary_color = ""
+            if priority == 1:
+                priority = "red"
+                secondary_color = "#f8d7da"
+            elif priority == 2:
+                priority = "orange"
+                secondary_color = "#fbe7ce"
+            elif priority == 3:
+                priority = "blue"
+                secondary_color = "#d1ecf1"
+            elif priority == 4:
+                priority = "black"
+                secondary_color = "#d6d8d9"
+            state = task_details["state"]
+            due_date = task_details["due_date"]
+            created_at = task_details["created_at"]
+
+            task_checkbox = QCheckBox(title)
+            task_checkbox.setFont(inter_font)
+            task_checkbox.setStyleSheet(f"""
+            QCheckBox::indicator {{
+            width: 22.5px;
+            height: 22.5px;
+            border-radius: 12px;
+            }}
+            QCheckBox::indicator:unchecked {{
+            border: 2px solid {priority};
+            background-color: #ffffff;
+            }}
+            QCheckBox::indicator:unchecked:hover {{
+            border: 2px solid {priority};
+            background-color: {secondary_color};
+            }}
+            """)
+            task_checkbox.setCursor(Qt.PointingHandCursor)
+            task_checkbox.stateChanged.connect(
+                lambda state, cb=task_checkbox, container=single_task_container, task_id=i: remove_task(cb, container, task_id=task_id)
+            )
+
+            self.checkbox_container = QHBoxLayout()
+            self.checkbox_container.setContentsMargins(0, 0, 0, 0)
+            self.checkbox_container.setSpacing(0)
+            self.checkbox_container.setAlignment(Qt.AlignLeft)
+
+            self.project = QLabel(project)
+            self.project.setStyleSheet("font-size: 14px; color: grey; padding-left: 10px;")
+
+            self.descripcion = QLabel(description)
+            self.descripcion.setStyleSheet("font-size: 14px; color: grey; padding-left: 32px;")
+            self.descripcion.setCursor(Qt.PointingHandCursor)
+            # self.descripcion.mouseReleaseEvent = lambda event, i=i: self.description_button_clicked(i)
+
+            self.checkbox_container.addWidget(task_checkbox)
+            self.checkbox_container.addWidget(self.project)
+
+            container_layout.addLayout(self.checkbox_container)
+            container_layout.addWidget(self.descripcion)
+
+            self.tasks_layout.addWidget(single_task_container)
+
+    def filters_changed(self, priority_checked, priority_index, category_text):
+        # Verifica si el checkbox de prioridad está activado
+        ids_filtred = []
+        ids_task_to_show = get_task_due_today_controller()
+        if priority_checked:
+            ids_filtred += get_tasks_by_priority_controller(0)
+            ids_filtred += get_tasks_by_priority_controller(1)
+            ids_filtred += get_tasks_by_priority_controller(2)
+            ids_filtred += get_tasks_by_priority_controller(3)
+            ids_filtred += get_tasks_by_priority_controller(4)
+        priority_index = int(priority_index)
+        if priority_index != 4:
+            try:
+                priority_index = int(priority_index)
+            except ValueError:
+                print("Error: priority_index no es un entero válido")
+                return
+            ids_filtred = get_tasks_by_priority_controller(priority_index + 1)
+            ids_task_to_show = [task_id for task_id in ids_task_to_show if task_id in ids_filtred]
+            # return get_tasks_by_priority_controller(priority_index)
+        # Clicada la de mostrar solo proyecto X
+        if category_text:
+            id_project = get_project_id_by_name_controller(category_text)
+            ids_filtred = get_tasks_by_project_controller(id_project)
+            ids_task_to_show = [task_id for task_id in ids_task_to_show if task_id in ids_filtred]
+
+        # if not priority_checked and not priority_index and not category_text:
+        #     return
+
+        self.clear_tasks_layout()
+
+        # Filtrar las tareas que no están en ids_filtred
+        if priority_checked:
+            ids_task_to_show = [task_id for task_id in ids_filtred if task_id in get_task_due_today_controller()]
+            
+        if not ids_task_to_show:
+            return
+        inter_font = QFont("Inter")
+        self.no_tasks_image.hide()
+        self.no_tasks_text.hide()
+        self.no_tasks_description.hide()
+
+        self.tasks_layout.setContentsMargins(140, 0, 0, 100)
+        self.tasks_layout.setSpacing(20)
+        self.tasks_layout.setAlignment(Qt.AlignLeft)
+        self.tasks_layout.setAlignment(Qt.AlignTop)
+
+        def remove_task(checkbox, container, task_id):
+            if checkbox.isChecked():
+                # success = remove_task_from_project_controller(checkbox.text().strip(), checkbox)
+                container.setParent(None)
+                container.deleteLater()  # Elimina el widget de la memoria
+                remaining_tasks = 0
+                for i in range(self.tasks_layout.count()):
+                    widget = self.tasks_layout.itemAt(i).widget()
+                    # Supongamos que tus contenedores de tareas tienen un nombre o propiedad
+                    if widget and widget.property("isTaskContainer"):
+                        remaining_tasks += 1
+                task_details  = get_task_details_controller(task_id)
+                project_id = task_details["project_uuid"]
+                uuid = task_details["uuid"]
+                title = task_details["title"]
+                description = task_details["description"]
+                priority = task_details["priority"]
+
+                remove_task_from_project_controller(project_id, task_id)
+                if remaining_tasks == 0:
+                    self.no_tasks_image.show()
+                    self.no_tasks_text.show()
+                    self.no_tasks_description.show()
+
+        for i in (ids_task_to_show):
+            single_task_container = QWidget()
+            single_task_container.setProperty("isTaskContainer", True)
+            container_layout = QVBoxLayout(single_task_container)
+            container_layout.setContentsMargins(0, 0, 0, 0)
+            container_layout.setSpacing(2)
+
+            task_details  = get_task_details_controller(i)
+            project = task_details["project"]
+            uuid = task_details["uuid"]
+            title = task_details["title"]
+            description = task_details["description"]
+            priority = task_details["priority"]
+            secondary_color = ""
+            if priority == 1:
+                priority = "red"
+                secondary_color = "#f8d7da"
+            elif priority == 2:
+                priority = "orange"
+                secondary_color = "#fbe7ce"
+            elif priority == 3:
+                priority = "blue"
+                secondary_color = "#d1ecf1"
+            elif priority == 4:
+                priority = "black"
+                secondary_color = "#d6d8d9"
+            state = task_details["state"]
+            due_date = task_details["due_date"]
+            created_at = task_details["created_at"]
+
+            task_checkbox = QCheckBox(title)
+            task_checkbox.setFont(inter_font)
+            task_checkbox.setStyleSheet(f"""
+            QCheckBox::indicator {{
+            width: 22.5px;
+            height: 22.5px;
+            border-radius: 12px;
+            }}
+            QCheckBox::indicator:unchecked {{
+            border: 2px solid {priority};
+            background-color: #ffffff;
+            }}
+            QCheckBox::indicator:unchecked:hover {{
+            border: 2px solid {priority};
+            background-color: {secondary_color};
+            }}
+            """)
+            task_checkbox.setCursor(Qt.PointingHandCursor)
+            task_checkbox.stateChanged.connect(
+                lambda state, cb=task_checkbox, container=single_task_container, task_id=i: remove_task(cb, container, task_id=task_id)
+            )
+
+            self.checkbox_container = QHBoxLayout()
+            self.checkbox_container.setContentsMargins(0, 0, 0, 0)
+            self.checkbox_container.setSpacing(0)
+            self.checkbox_container.setAlignment(Qt.AlignLeft)
+
+            self.project = QLabel(project)
+            self.project.setStyleSheet("font-size: 14px; color: grey; padding-left: 10px;")
+
+            self.descripcion = QLabel(description)
+            self.descripcion.setStyleSheet("font-size: 14px; color: grey; padding-left: 32px;")
+            self.descripcion.setCursor(Qt.PointingHandCursor)
+            # self.descripcion.mouseReleaseEvent = lambda event, i=i: self.description_button_clicked(i)
+
+            self.checkbox_container.addWidget(task_checkbox)
+            self.checkbox_container.addWidget(self.project)
+
+            container_layout.addLayout(self.checkbox_container)
+            container_layout.addWidget(self.descripcion)
+
+            self.tasks_layout.addWidget(single_task_container)

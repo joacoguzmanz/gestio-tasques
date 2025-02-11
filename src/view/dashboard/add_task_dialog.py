@@ -4,10 +4,12 @@ from PyQt5.QtWidgets import (
     QApplication, QDialog, QVBoxLayout, QLabel, QPushButton, QSizePolicy,
     QGraphicsDropShadowEffect, QWidget, QLineEdit, QFrame, QComboBox, QHBoxLayout, QCalendarWidget
 )
-from PyQt5.QtCore import Qt, QPoint, QLocale, QDate, QSize
+from PyQt5.QtCore import Qt, QPoint, QLocale, QDate, QSize, pyqtSignal
 from PyQt5.QtGui import QColor, QFontDatabase, QFont, QIcon
 import random
 
+from controller.task_manager_controller import add_task_to_project_controller, create_project_controller, get_tasks_by_priority_controller
+from src.view.dashboard.signal_bus import global_signals
 # from managers.task_manager import TaskManager
 
 class AddTaskDialog(QDialog):
@@ -381,6 +383,20 @@ class AddTaskDialog(QDialog):
         """)
         self.add_task_button.setFont(inter_font)
         self.add_task_button.setCursor(Qt.ForbiddenCursor)
+        self.add_task_button.clicked.connect(
+            lambda: (
+                (project_id := create_project_controller(self.category_text.text()) if self.category_text.text() != "" else None),
+                add_task_to_project_controller(
+                    project_id,
+                    self.title_input.text(),
+                    self.description_input.text(),
+                    self.combo_box2.currentIndex() + 1,
+                    self.calendar.selectedDate().toPyDate()
+                ),
+                global_signals.taskAdded.emit(),
+                self.close()
+            )
+        )
         button_layout.addWidget(self.add_task_button, alignment=Qt.AlignRight)
         
         container_layout.addLayout(button_layout)

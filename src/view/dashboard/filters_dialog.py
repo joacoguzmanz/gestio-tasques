@@ -8,6 +8,8 @@ from PyQt5.QtCore import Qt, QPoint, QLocale, QDate, QSize
 from PyQt5.QtGui import QColor, QFontDatabase, QFont, QIcon
 import random
 
+from src.view.dashboard.signal_bus import global_signals
+
 class FiltersDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -190,7 +192,7 @@ class FiltersDialog(QDialog):
         """)
         self.apply_button.setFont(inter_font)
         self.apply_button.setCursor(Qt.PointingHandCursor)
-        # self.apply_button.clicked.connect()
+        self.apply_button.clicked.connect(self.apply_button_clicked)
         button_layout.addWidget(self.apply_button, alignment=Qt.AlignRight)
         
         container_layout.addLayout(button_layout)
@@ -198,6 +200,12 @@ class FiltersDialog(QDialog):
         # Agrega el contenedor al layout principal centrado
         main_layout.addWidget(self.container, alignment=Qt.AlignCenter)
 
+    def apply_button_clicked(self):
+        global_signals.filtersChanged.emit(
+            self.priority_checkbox.isChecked(),  # Ahora es un bool
+            self.combo_box2.currentIndex(),      # Ahora es un int
+            self.category_text.text()            # Ya era un str
+        )
     def ensure_hashtag(self):
         text = self.category_text.text()
         if text and not text.startswith("#"):
